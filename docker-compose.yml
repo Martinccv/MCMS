@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      # - ./mysql:/var/lib/mysql
+      - ./MCMS:/MCMS
+      - ./backup:/backup
+    ports:
+      - "3306:3306"
