@@ -1,5 +1,7 @@
 USE MCMS;
 
+SET GLOBAL local_infile = true;
+
 -- Datos para la tabla Ubicaciones
 INSERT INTO Ubicaciones (Nombre, Direccion, Encargado) VALUES
 ('Almacén Central', 'Calle Principal 123', 'Juan Pérez'),

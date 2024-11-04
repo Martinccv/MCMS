@@ -9,7 +9,7 @@ PASSWORD=${MYSQL_ROOT_PASSWORD}
 DATABASE=${MYSQL_DATABASE}
 USER=${MYSQL_USER}
 
-DOCKER_COMPOSE_FILE=./Proyecto/docker-compose.yml
+DOCKER_COMPOSE_FILE=./docker-compose.yml
 DATABASE_CREATION=./Proyecto/Structure.sql
 DATABASE_POPULATION=./Proyecto/data.sql
 

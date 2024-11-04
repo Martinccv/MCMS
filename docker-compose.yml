@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       # - ./mysql:/var/lib/mysql
-      - ./MCMS:/MCMS
+      - ./Proyecto:/Proyecto
       - ./backup:/backup
     ports:
       - "3306:3306"
