@@ -55,7 +55,8 @@ backup-db:
 	@echo "Back up database by structure and data"
 	# Dump MySQL database to a file
 	# para que te permita descargar con procedimientos
-	docker exec -it $(SERVICE_NAME) mysqldump --routines=true -u$(MYSQL_USER) -p$(PASSWORD) --host 127.0.0.1 --port 3306 $(DATABASE) > ./backup/$(DATABASE)-backup.sql
+	mkdir -p /workspaces/MCMS/temp_backup
+	docker exec -it $(SERVICE_NAME) mysqldump --routines=true -u$(MYSQL_USER) -p$(PASSWORD) --host 127.0.0.1 --port 3306 $(DATABASE) > ./temp_backup/$(DATABASE)-backup.sql
 
 restore-db:
 	@echo "Restore database by structure and data"
