@@ -62,7 +62,7 @@ restore-db:
 	@echo "Restore database by structure and data"
 	# Restore MySQL database from a dump file
 	# Debe ingresar al archivo dumpeado las lineas drop y create database CentroLogistico, USE CentroLogistico y comentar la primera linea de codigo donde advierte sobre contraseña
-	docker exec -i $(SERVICE_NAME) mysql -u$(MYSQL_USER) -p$(PASSWORD) < ./backup/$(DATABASE)-backup.sql
+	docker exec -i $(SERVICE_NAME) mysql -u$(MYSQL_USER) -p$(PASSWORD) < ./temp_backup/$(DATABASE)-backup.sql
 
 down:
 	@echo "Remove the Database"
