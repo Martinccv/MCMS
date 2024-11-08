@@ -1,5 +1,7 @@
+USE MCMS;
 
 -- Trigger para actualizar historial de activo cuando cambia el estado:
+DROP TRIGGER IF EXISTS trigger_estado_activo_cambio;
 DELIMITER //
 CREATE TRIGGER trigger_estado_activo_cambio
 AFTER UPDATE ON Activos
@@ -12,7 +14,8 @@ BEGIN
 END//
 DELIMITER ;
 
---Trigger para alertar cuando el inventario está bajo el mínimo:
+-- Trigger para alertar cuando el inventario está bajo el mínimo:
+DROP TRIGGER IF EXISTS trigger_inventario_minimo;
 DELIMITER //
 CREATE TRIGGER trigger_inventario_minimo
 AFTER UPDATE ON Inventario
@@ -25,6 +28,7 @@ END//
 DELIMITER ;
 
 -- Trigger para actualizar historial de mantenimiento al completar una orden:
+DROP TRIGGER IF EXISTS trigger_orden_mantenimiento_completa;
 DELIMITER //
 CREATE TRIGGER trigger_orden_mantenimiento_completa
 AFTER UPDATE ON Ordenes_Mantenimiento

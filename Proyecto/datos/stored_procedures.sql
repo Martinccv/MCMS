@@ -1,5 +1,8 @@
+USE MCMS;
 
 -- Procedimiento para actualizar el estado de un activo:
+
+DROP PROCEDURE IF EXISTS sp_actualizar_estado_activo;
 DELIMITER //
 CREATE PROCEDURE sp_actualizar_estado_activo(
     IN activo_id INT, 
@@ -11,6 +14,7 @@ END//
 DELIMITER ;
 
 -- Procedimiento para actualizar el stock de inventario:
+DROP PROCEDURE IF EXISTS sp_actualizar_stock;
 DELIMITER //
 CREATE PROCEDURE sp_actualizar_stock(
     IN material_id INT,
@@ -24,6 +28,7 @@ END//
 DELIMITER ;
 
 -- Procedimiento para generar programación de mantenimiento preventivo:
+DROP PROCEDURE IF EXISTS sp_generar_programacion;
 DELIMITER //
 CREATE PROCEDURE sp_generar_programacion(
     IN activo_id INT,
@@ -45,6 +50,7 @@ END//
 DELIMITER ;
 
 -- Procedimiento para generar un pedido automático:
+DROP PROCEDURE IF EXISTS sp_generar_pedido;
 DELIMITER //
 CREATE PROCEDURE sp_generar_pedido(
     IN proveedor_id INT,
@@ -61,4 +67,46 @@ BEGIN
     UPDATE Pedidos SET Total = (SELECT SUM(Cantidad * Costo) FROM Detalle_Pedido WHERE ID_Pedido = LAST_INSERT_ID())
     WHERE ID_Pedido = LAST_INSERT_ID();
 END//
+DELIMITER ;
+
+-- Procedimiento para registrar un nuevo pedido de material
+DROP PROCEDURE IF EXISTS registrar_pedido_material;
+DELIMITER //
+CREATE PROCEDURE registrar_pedido_material (
+    IN p_proveedor_id INT,
+    IN p_material_id INT,
+    IN p_cantidad INT,
+    IN p_costo DECIMAL(10, 2)
+)
+BEGIN
+    DECLARE pedido_id INT;
+
+    -- Crear el pedido
+    INSERT INTO Pedidos (ID_Proveedor, Fecha_Pedido, Estado, Total)
+    VALUES (p_proveedor_id, NOW(), 'Pendiente', p_cantidad * p_costo);
+
+    SET pedido_id = LAST_INSERT_ID();
+
+    -- Crear el detalle del pedido
+    INSERT INTO Detalle_Pedido (ID_Pedido, ID_Material, Cantidad, Costo)
+    VALUES (pedido_id, p_material_id, p_cantidad, p_costo);
+END //
+DELIMITER ;
+
+-- Procedimiento para registrar una recepción de pedido
+DROP PROCEDURE IF EXISTS registrar_recepcion_pedido;
+DELIMITER //
+CREATE PROCEDURE registrar_recepcion_pedido (
+    IN p_pedido_id INT
+)
+BEGIN
+    -- Marcar el pedido como recibido
+    UPDATE Pedidos
+    SET Estado = 'Recibido'
+    WHERE ID_Pedido = p_pedido_id;
+
+    -- Crear una recepción para el pedido
+    INSERT INTO Recepciones (ID_Pedido, Fecha_Recepcion, Estado)
+    VALUES (p_pedido_id, NOW(), 'Completada');
+END //
 DELIMITER ;
