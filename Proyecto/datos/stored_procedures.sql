@@ -113,34 +113,36 @@ DELIMITER ;
 
 -- generar una nueva orden de mantenimiento
 DROP PROCEDURE IF EXISTS generar_orden_mantenimiento;
-
 DELIMITER //
 CREATE PROCEDURE generar_orden_mantenimiento(
     IN p_ID_Activo INT,
     IN p_Tipo_Mantenimiento ENUM('Preventivo', 'Correctivo'),
     IN p_Descripcion TEXT,
-    IN p_Tareas JSON -- Formato JSON: '[{"Descripcion": "Tarea 1", "Responsable": "Juan"}, {"Descripcion": "Tarea 2", "Responsable": "Maria"}]'
+    IN p_Tareas JSON  -- Tareas en formato JSON simplificado: '[["Tarea 1", "Juan"], ["Tarea 2", "Maria"]]'
 )
 BEGIN
+    -- Variables para manejar las tareas desde el JSON
     DECLARE v_ID_Orden INT;
     DECLARE v_Index INT DEFAULT 0;
-    DECLARE v_Total_Tareas INT DEFAULT JSON_LENGTH(p_Tareas);
     DECLARE v_Tarea_Descripcion TEXT;
     DECLARE v_Tarea_Responsable VARCHAR(100);
+    DECLARE v_Total_Tareas INT;
 
-    -- Insertar la nueva orden de mantenimiento
+    -- Insertar una nueva orden de mantenimiento
     INSERT INTO Ordenes_Mantenimiento (ID_Activo, Tipo_Mantenimiento, Fecha_Inicio, Estado, Descripcion)
     VALUES (p_ID_Activo, p_Tipo_Mantenimiento, CURDATE(), 'Pendiente', p_Descripcion);
 
-    -- Obtener el ID de la orden recién creada
+    -- Obtener el ID de la orden creada
     SET v_ID_Orden = LAST_INSERT_ID();
 
-    -- Iterar sobre el JSON de tareas y agregar cada una a la tabla Tareas
-    WHILE v_Index < v_Total_Tareas DO
-        SET v_Tarea_Descripcion = JSON_UNQUOTE(JSON_EXTRACT(p_Tareas, CONCAT('$[', v_Index, '].Descripcion')));
-        SET v_Tarea_Responsable = JSON_UNQUOTE(JSON_EXTRACT(p_Tareas, CONCAT('$[', v_Index, '].Responsable')));
+    -- Número total de tareas en el JSON
+    SET v_Total_Tareas = JSON_LENGTH(p_Tareas);
 
-        -- Insertar cada tarea asociada a la orden
+    -- Iterar sobre cada tarea en el JSON e insertarla en la tabla Tareas
+    WHILE v_Index < v_Total_Tareas DO
+        SET v_Tarea_Descripcion = JSON_UNQUOTE(JSON_EXTRACT(p_Tareas, CONCAT('$[', v_Index, '][0]')));
+        SET v_Tarea_Responsable = JSON_UNQUOTE(JSON_EXTRACT(p_Tareas, CONCAT('$[', v_Index, '][1]')));
+
         INSERT INTO Tareas (ID_Orden, Descripcion, Estado, Responsable)
         VALUES (v_ID_Orden, v_Tarea_Descripcion, 'Pendiente', v_Tarea_Responsable);
 
