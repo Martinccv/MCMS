@@ -1,5 +1,6 @@
 USE MCMS;
 
+DROP ROLE IF EXISTS Mantenimiento_Jefe, Mantenimiento_Tecnico, Inventario_Gerente, Inventario_Empleado, Compras_Responsable, Analista;
 -- Rol para Jefe de Mantenimiento
 CREATE ROLE Mantenimiento_Jefe;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Ordenes_Mantenimiento TO Mantenimiento_Jefe;
@@ -41,24 +42,25 @@ GRANT SELECT ON Vista_Estado_Mantenimiento TO Analista;
 GRANT SELECT ON Vista_Estado_Pedidos TO Analista;
 GRANT SELECT ON Vista_Inventario_Materiales TO Analista;
 
+DROP USER IF EXISTS jefe_mantenimiento, tecnico_mantenimiento, gerente_inventario, empleado_inventario, responsable_compras, analista;
 -- Creación de usuarios y asignación de roles
-CREATE USER 'jefe_mantenimiento'@'localhost' IDENTIFIED BY 'password';
-GRANT Mantenimiento_Jefe TO 'jefe_mantenimiento'@'localhost';
+CREATE USER 'jefe_mantenimiento'@'%' IDENTIFIED BY 'password';
+GRANT Mantenimiento_Jefe TO 'jefe_mantenimiento'@'%';
 
-CREATE USER 'tecnico_mantenimiento'@'localhost' IDENTIFIED BY 'password';
-GRANT Mantenimiento_Tecnico TO 'tecnico_mantenimiento'@'localhost';
+CREATE USER 'tecnico_mantenimiento'@'%' IDENTIFIED BY 'password';
+GRANT Mantenimiento_Tecnico TO 'tecnico_mantenimiento'@'%';
 
-CREATE USER 'gerente_inventario'@'localhost' IDENTIFIED BY 'password';
-GRANT Inventario_Gerente TO 'gerente_inventario'@'localhost';
+CREATE USER 'gerente_inventario'@'%' IDENTIFIED BY 'password';
+GRANT Inventario_Gerente TO 'gerente_inventario'@'%';
 
-CREATE USER 'empleado_inventario'@'localhost' IDENTIFIED BY 'password';
-GRANT Inventario_Empleado TO 'empleado_inventario'@'localhost';
+CREATE USER 'empleado_inventario'@'%' IDENTIFIED BY 'password';
+GRANT Inventario_Empleado TO 'empleado_inventario'@'%';
 
-CREATE USER 'responsable_compras'@'localhost' IDENTIFIED BY 'password';
-GRANT Compras_Responsable TO 'responsable_compras'@'localhost';
+CREATE USER 'responsable_compras'@'%' IDENTIFIED BY 'password';
+GRANT Compras_Responsable TO 'responsable_compras'@'%';
 
-CREATE USER 'analista'@'localhost' IDENTIFIED BY 'password';
-GRANT Analista TO 'analista'@'localhost';
+CREATE USER 'analista'@'%' IDENTIFIED BY 'password';
+GRANT Analista TO 'analista'@'%';
 
 FLUSH PRIVILEGES;
 

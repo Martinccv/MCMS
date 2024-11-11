@@ -110,3 +110,62 @@ BEGIN
     VALUES (p_pedido_id, NOW(), 'Completada');
 END //
 DELIMITER ;
+
+-- generar una nueva orden de mantenimiento
+DROP PROCEDURE IF EXISTS generar_orden_mantenimiento;
+
+DELIMITER //
+CREATE PROCEDURE generar_orden_mantenimiento(
+    IN p_ID_Activo INT,
+    IN p_Tipo_Mantenimiento ENUM('Preventivo', 'Correctivo'),
+    IN p_Descripcion TEXT,
+    IN p_Tareas JSON -- Formato JSON: '[{"Descripcion": "Tarea 1", "Responsable": "Juan"}, {"Descripcion": "Tarea 2", "Responsable": "Maria"}]'
+)
+BEGIN
+    DECLARE v_ID_Orden INT;
+    DECLARE v_Index INT DEFAULT 0;
+    DECLARE v_Total_Tareas INT DEFAULT JSON_LENGTH(p_Tareas);
+    DECLARE v_Tarea_Descripcion TEXT;
+    DECLARE v_Tarea_Responsable VARCHAR(100);
+
+    -- Insertar la nueva orden de mantenimiento
+    INSERT INTO Ordenes_Mantenimiento (ID_Activo, Tipo_Mantenimiento, Fecha_Inicio, Estado, Descripcion)
+    VALUES (p_ID_Activo, p_Tipo_Mantenimiento, CURDATE(), 'Pendiente', p_Descripcion);
+
+    -- Obtener el ID de la orden recién creada
+    SET v_ID_Orden = LAST_INSERT_ID();
+
+    -- Iterar sobre el JSON de tareas y agregar cada una a la tabla Tareas
+    WHILE v_Index < v_Total_Tareas DO
+        SET v_Tarea_Descripcion = JSON_UNQUOTE(JSON_EXTRACT(p_Tareas, CONCAT('$[', v_Index, '].Descripcion')));
+        SET v_Tarea_Responsable = JSON_UNQUOTE(JSON_EXTRACT(p_Tareas, CONCAT('$[', v_Index, '].Responsable')));
+
+        -- Insertar cada tarea asociada a la orden
+        INSERT INTO Tareas (ID_Orden, Descripcion, Estado, Responsable)
+        VALUES (v_ID_Orden, v_Tarea_Descripcion, 'Pendiente', v_Tarea_Responsable);
+
+        SET v_Index = v_Index + 1;
+    END WHILE;
+END //
+DELIMITER ;
+
+
+-- finalizar las ordenes de mantenimiento y sus tareas
+DROP PROCEDURE IF EXISTS finalizar_orden_mantenimiento;
+DELIMITER //
+CREATE PROCEDURE finalizar_orden_mantenimiento(
+    IN p_ID_Orden INT
+)
+BEGIN
+    -- Actualizar el estado de la orden de mantenimiento
+    UPDATE Ordenes_Mantenimiento
+    SET Estado = 'Completado', Fecha_Fin = CURDATE()
+    WHERE ID_Orden = p_ID_Orden;
+
+    -- Actualizar el estado de las tareas asociadas a la orden de mantenimiento
+    UPDATE Tareas
+    SET Estado = 'Completada'
+    WHERE ID_Orden = p_ID_Orden AND Estado != 'Completada';
+END //
+
+DELIMITER ;
