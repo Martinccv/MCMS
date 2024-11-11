@@ -18,14 +18,23 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS trigger_inventario_minimo;
 DELIMITER //
 CREATE TRIGGER trigger_inventario_minimo
-AFTER UPDATE ON Inventario
+BEFORE UPDATE ON Inventario
 FOR EACH ROW
 BEGIN
-    IF NEW.Cantidad_Disponible < NEW.Cantidad_Minima THEN
-        INSERT INTO Alertas (Mensaje, Fecha) VALUES (CONCAT('Stock bajo para material ID ', NEW.ID_Material), NOW());
+    -- Verificar si el nuevo stock es negativo
+    IF NEW.Cantidad_Disponible < 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Error: No hay suficiente stock para este material.';
     END IF;
-END//
+
+    -- Insertar una alerta si el stock está por debajo del mínimo
+    IF NEW.Cantidad_Disponible < NEW.Cantidad_Minima THEN
+        INSERT INTO Alertas (Mensaje, Fecha)
+        VALUES (CONCAT('Stock bajo para material ID ', NEW.ID_Material, ' en ubicación ID ', NEW.ID_Ubicacion), NOW());
+    END IF;
+END //
 DELIMITER ;
+
 
 -- Trigger para actualizar historial de mantenimiento al completar una orden:
 DROP TRIGGER IF EXISTS trigger_orden_mantenimiento_completa;

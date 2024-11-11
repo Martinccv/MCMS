@@ -25,6 +25,13 @@ CREATE TABLE Inventario (
     ID_Ubicacion INT
 );
 
+CREATE TABLE Alertas (
+    ID_Alerta INT PRIMARY KEY AUTO_INCREMENT,
+    Mensaje VARCHAR(255) NOT NULL,
+    Fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Estado ENUM('Pendiente', 'Atendida') DEFAULT 'Pendiente'
+);
+
 -- Claves foráneas
 ALTER TABLE Materiales
     ADD FOREIGN KEY (ID_Proveedor) REFERENCES Proveedores(ID_Proveedor);

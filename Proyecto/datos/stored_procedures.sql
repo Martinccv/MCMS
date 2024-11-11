@@ -14,17 +14,19 @@ END//
 DELIMITER ;
 
 -- Procedimiento para actualizar el stock de inventario:
-DROP PROCEDURE IF EXISTS sp_actualizar_stock;
+DROP PROCEDURE IF EXISTS sp_insertar_inventario;
 DELIMITER //
-CREATE PROCEDURE sp_actualizar_stock(
+CREATE PROCEDURE sp_insertar_inventario(
     IN material_id INT,
-    IN cantidad INT
+    IN cantidad INT,
+    IN cantidad_minima INT,
+    IN id_ubicacion INT
 )
 BEGIN
-    UPDATE Inventario
-    SET Cantidad_Disponible = Cantidad_Disponible + cantidad
-    WHERE ID_Material = material_id;
-END//
+    -- Insertar una nueva entrada en Inventario
+    INSERT INTO Inventario (ID_Material, Cantidad_Disponible, Cantidad_Minima, ID_Ubicacion)
+    VALUES (material_id, cantidad, cantidad_minima, id_ubicacion);
+END //
 DELIMITER ;
 
 -- Procedimiento para generar programación de mantenimiento preventivo:
@@ -181,7 +183,7 @@ CREATE PROCEDURE crear_activo(
     IN p_Fecha_Compra DATE,
     IN p_Proveedor VARCHAR(100),
     IN p_Valor DECIMAL(10, 2),
-    IN p_ID_Ubicacion INT,
+    IN p_ID_Ubicacion INT
 )
 BEGIN
     INSERT INTO Activos (Tipo, Descripcion, Fecha_Compra, Proveedor, Valor, ID_Ubicacion)

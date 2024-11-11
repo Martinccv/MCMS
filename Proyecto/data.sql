@@ -14,10 +14,10 @@ INSERT INTO Proveedores (Nombre, Contacto, Direccion, Telefono, Correo) VALUES
 ('Proveedor B', 'Luis García', 'Calle Abastecedores 202', '987654321', 'proveedorb@example.com');
 
 -- Datos para la tabla Materiales
-INSERT INTO Materiales (Nombre, Descripcion, ID_Proveedor, Costo, Unidad_Medida) VALUES
-('Tornillo', 'Tornillo de acero inoxidable', 1, 0.50, 'unidad'),
-('Madera', 'Madera de pino', 2, 15.00, 'metro cúbico'),
-('Pintura', 'Pintura para interiores, color blanco', 1, 25.00, 'litro');
+INSERT INTO Materiales (Nombre, Descripcion, ID_Proveedor, Unidad_Medida) VALUES
+('Tornillo', 'Tornillo de acero inoxidable', 1, 'unidad'),
+('Madera', 'Madera de pino', 2, 'metro cúbico'),
+('Pintura', 'Pintura para interiores, color blanco', 1, 'litro');
 
 -- Datos para la tabla Activos
 INSERT INTO Activos (Tipo, Descripcion, Fecha_Compra, Proveedor, Valor, ID_Ubicacion, Estado) VALUES
