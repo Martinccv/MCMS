@@ -14,7 +14,6 @@ CREATE TABLE Materiales (
     Nombre VARCHAR(100) NOT NULL,
     Descripcion TEXT,
     ID_Proveedor INT,
-    Costo DECIMAL(10, 2),
     Unidad_Medida VARCHAR(20)
 );
 

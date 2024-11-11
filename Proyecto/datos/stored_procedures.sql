@@ -171,3 +171,35 @@ BEGIN
 END //
 
 DELIMITER ;
+
+-- Crear un activo nuevo
+DROP PROCEDURE IF EXISTS crear_activo;
+DELIMITER //
+CREATE PROCEDURE crear_activo(
+    IN p_Tipo VARCHAR(50),
+    IN p_Descripcion TEXT,
+    IN p_Fecha_Compra DATE,
+    IN p_Proveedor VARCHAR(100),
+    IN p_Valor DECIMAL(10, 2),
+    IN p_ID_Ubicacion INT,
+)
+BEGIN
+    INSERT INTO Activos (Tipo, Descripcion, Fecha_Compra, Proveedor, Valor, ID_Ubicacion)
+    VALUES (p_Tipo, p_Descripcion, p_Fecha_Compra, p_Proveedor, p_Valor, p_ID_Ubicacion);
+END //
+DELIMITER ;
+
+-- Crear repuestos nuevos
+DROP PROCEDURE IF EXISTS crear_material;
+DELIMITER //
+CREATE PROCEDURE crear_material(
+    IN p_Nombre VARCHAR(100),
+    IN p_Descripcion TEXT,
+    IN p_ID_Proveedor INT,
+    IN p_Unidad_Medida VARCHAR(20)
+)
+BEGIN
+    INSERT INTO Materiales (Nombre, Descripcion, ID_Proveedor, Unidad_Medida)
+    VALUES (p_Nombre, p_Descripcion, p_ID_Proveedor, p_Unidad_Medida);
+END //
+DELIMITER ;
