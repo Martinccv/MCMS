@@ -3,13 +3,15 @@ USE MCMS;
 -- Vista para ver el inventario general de materiales por ubicación
 DROP VIEW IF EXISTS Vista_Inventario_Materiales;
 CREATE VIEW Vista_Inventario_Materiales AS
-SELECT u.Nombre AS Ubicacion,
-       m.Nombre AS Material,
-       i.Cantidad_Disponible,
-       i.Cantidad_Minima
+SELECT 
+    u.Nombre AS Ubicacion,
+    m.Nombre AS Material,
+    SUM(i.Cantidad_Disponible) AS Cantidad_Total_Disponible
 FROM Inventario i
 JOIN Materiales m ON i.ID_Material = m.ID_Material
-JOIN Ubicaciones u ON i.ID_Ubicacion = u.ID_Ubicacion;
+JOIN Ubicaciones u ON i.ID_Ubicacion = u.ID_Ubicacion
+GROUP BY u.Nombre, m.Nombre;
+
 
 -- Vista para obtener el estado de las órdenes de mantenimiento de los activos
 DROP VIEW IF EXISTS Vista_Estado_Mantenimiento;

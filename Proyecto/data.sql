@@ -32,10 +32,10 @@ INSERT INTO Historial_Activo (ID_Activo, Fecha, Descripcion, Costo, Responsable)
 (3, '2023-07-20', 'Reparación de pistón', 800.00, 'Carla Pérez');
 
 -- Datos para la tabla Inventario
-INSERT INTO Inventario (ID_Material, Cantidad_Disponible, Cantidad_Minima, ID_Ubicacion) VALUES
-(1, 100, 20, 1),
-(2, 50, 10, 1),
-(3, 200, 30, 2);
+INSERT INTO Inventario (ID_Material, Cantidad_Disponible, ID_Ubicacion) VALUES
+(1, 100, 1),
+(2, 70, 1),
+(3, 200, 2);
 
 -- Datos para la tabla Ordenes_Mantenimiento
 INSERT INTO Ordenes_Mantenimiento (ID_Activo, Tipo_Mantenimiento, Fecha_Inicio, Fecha_Fin, Estado, Descripcion) VALUES

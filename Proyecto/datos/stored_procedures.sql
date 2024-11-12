@@ -13,19 +13,18 @@ BEGIN
 END//
 DELIMITER ;
 
--- Procedimiento para actualizar el stock de inventario:
-DROP PROCEDURE IF EXISTS sp_insertar_inventario;
+DROP PROCEDURE IF EXISTS sp_actualizar_stock;
 DELIMITER //
-CREATE PROCEDURE sp_insertar_inventario(
+CREATE PROCEDURE sp_actualizar_stock(
     IN material_id INT,
     IN cantidad INT,
-    IN cantidad_minima INT,
     IN id_ubicacion INT
 )
 BEGIN
+
     -- Insertar una nueva entrada en Inventario
-    INSERT INTO Inventario (ID_Material, Cantidad_Disponible, Cantidad_Minima, ID_Ubicacion)
-    VALUES (material_id, cantidad, cantidad_minima, id_ubicacion);
+    INSERT INTO Inventario (ID_Material, Cantidad_Disponible, ID_Ubicacion)
+    VALUES (material_id, cantidad, id_ubicacion);
 END //
 DELIMITER ;
 
@@ -203,5 +202,29 @@ CREATE PROCEDURE crear_material(
 BEGIN
     INSERT INTO Materiales (Nombre, Descripcion, ID_Proveedor, Unidad_Medida)
     VALUES (p_Nombre, p_Descripcion, p_ID_Proveedor, p_Unidad_Medida);
+END //
+DELIMITER ;
+
+-- modificar informacion del material
+DROP PROCEDURE IF EXISTS sp_modificar_material;
+DELIMITER //
+CREATE PROCEDURE sp_modificar_material(
+    IN p_ID_Material INT,
+    IN p_Nombre VARCHAR(100),
+    IN p_Descripcion TEXT,
+    IN p_ID_Proveedor INT,
+    IN p_Cantidad_Minima ENUM('bajo', 'medio_bajo', 'medio', 'medio-alto', 'alto'),
+    IN p_Unidad_Medida VARCHAR(20)
+)
+BEGIN
+    UPDATE Materiales
+    SET 
+        Nombre = p_Nombre,
+        Descripcion = p_Descripcion,
+        ID_Proveedor = p_ID_Proveedor,
+        Cantidad_Minima = p_Cantidad_Minima,
+        Unidad_Medida = p_Unidad_Medida
+    WHERE 
+        ID_Material = p_ID_Material;
 END //
 DELIMITER ;

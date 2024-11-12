@@ -14,27 +14,57 @@ BEGIN
 END//
 DELIMITER ;
 
--- Trigger para alertar cuando el inventario está bajo el mínimo:
+-- Trigger para alertar cuando el inventario está bajo el mínimo
 DROP TRIGGER IF EXISTS trigger_inventario_minimo;
 DELIMITER //
 CREATE TRIGGER trigger_inventario_minimo
-BEFORE UPDATE ON Inventario
+BEFORE INSERT ON Inventario
 FOR EACH ROW
 BEGIN
-    -- Verificar si el nuevo stock es negativo
-    IF NEW.Cantidad_Disponible < 0 THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Error: No hay suficiente stock para este material.';
+    DECLARE v_Cantidad_Minima INT;
+    DECLARE v_Stock_Total INT;
+    DECLARE v_Mensaje TEXT;
+
+    -- Obtener el valor mínimo permitido de la tabla Materiales
+    SELECT 
+        CASE Cantidad_Minima
+            WHEN 'bajo' THEN 10
+            WHEN 'medio_bajo' THEN 30
+            WHEN 'medio' THEN 50
+            WHEN 'medio-alto' THEN 100
+            WHEN 'alto' THEN 200
+        END INTO v_Cantidad_Minima
+    FROM Materiales 
+    WHERE ID_Material = NEW.ID_Material;
+
+    -- Calcular el stock total para el mismo ID_Material y ID_Ubicacion
+    SELECT COALESCE(SUM(Cantidad_Disponible), 0)
+    INTO v_Stock_Total
+    FROM Inventario
+    WHERE ID_Material = NEW.ID_Material AND ID_Ubicacion = NEW.ID_Ubicacion;
+
+    -- Verificar si el stock total después de la operación sería negativo
+    IF v_Stock_Total + NEW.Cantidad_Disponible < 0 THEN
+        SET v_Mensaje = 'Error: No hay suficiente stock para este material en la ubicación especificada.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_Mensaje;
     END IF;
 
-    -- Insertar una alerta si el stock está por debajo del mínimo
-    IF NEW.Cantidad_Disponible < NEW.Cantidad_Minima THEN
+    -- Insertar una alerta si el stock total está por debajo del mínimo permitido
+    IF v_Stock_Total + NEW.Cantidad_Disponible <= v_Cantidad_Minima THEN
         INSERT INTO Alertas (Mensaje, Fecha)
-        VALUES (CONCAT('Stock bajo para material ID ', NEW.ID_Material, ' en ubicación ID ', NEW.ID_Ubicacion), NOW());
+        VALUES (
+            CONCAT('Stock bajo para material ID ', NEW.ID_Material, ' en ubicación ID ', NEW.ID_Ubicacion), 
+            NOW()
+        );
+
+        -- Generar mensaje de advertencia
+        SET v_Mensaje = CONCAT('Advertencia: El stock total de material ID ', NEW.ID_Material, 
+                               ' en ubicación ID ', NEW.ID_Ubicacion, 
+                               ' está por debajo del mínimo permitido.');
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_Mensaje;
     END IF;
 END //
 DELIMITER ;
-
 
 -- Trigger para actualizar historial de mantenimiento al completar una orden:
 DROP TRIGGER IF EXISTS trigger_orden_mantenimiento_completa;

@@ -14,6 +14,7 @@ CREATE TABLE Materiales (
     Nombre VARCHAR(100) NOT NULL,
     Descripcion TEXT,
     ID_Proveedor INT,
+    Cantidad_minima ENUM ("bajo","medio_bajo","medio","medio_alto","alto") DEFAULT "medio_bajo",
     Unidad_Medida VARCHAR(20)
 );
 
@@ -21,7 +22,6 @@ CREATE TABLE Inventario (
     ID_Inventario INT PRIMARY KEY AUTO_INCREMENT,
     ID_Material INT,
     Cantidad_Disponible INT,
-    Cantidad_Minima INT,
     ID_Ubicacion INT
 );
 
