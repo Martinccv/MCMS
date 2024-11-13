@@ -13,14 +13,17 @@ CREATE TABLE Detalle_Pedido (
     ID_Pedido INT,
     ID_Material INT,
     Cantidad INT,
-    Costo DECIMAL(10, 2)
+    Costo DECIMAL(10, 2),
+    Estado ENUM('Pendiente', 'Recibido') DEFAULT 'Pendiente',
+    ID_Ubicacion INT DEFAULT 1
 );
 
 CREATE TABLE Recepciones (
     ID_Recepcion INT PRIMARY KEY AUTO_INCREMENT,
     ID_Pedido INT,
     Fecha_Recepcion DATE,
-    Estado ENUM('Pendiente', 'Completada') DEFAULT 'Pendiente'
+    Estado ENUM('Pendiente', 'Completada') DEFAULT 'Pendiente',
+    ID_Ubicacion INT DEFAULT 1
 );
 
 -- Claves foráneas
@@ -29,7 +32,9 @@ ALTER TABLE Pedidos
 
 ALTER TABLE Detalle_Pedido
     ADD FOREIGN KEY (ID_Pedido) REFERENCES Pedidos(ID_Pedido),
-    ADD FOREIGN KEY (ID_Material) REFERENCES Materiales(ID_Material);
+    ADD FOREIGN KEY (ID_Material) REFERENCES Materiales(ID_Material),
+    ADD FOREIGN KEY (ID_Ubicacion) REFERENCES Ubicaciones(ID_Ubicacion);
 
 ALTER TABLE Recepciones
-    ADD FOREIGN KEY (ID_Pedido) REFERENCES Pedidos(ID_Pedido);
+    ADD FOREIGN KEY (ID_Pedido) REFERENCES Pedidos(ID_Pedido),
+    ADD FOREIGN KEY (ID_Ubicacion) REFERENCES Ubicaciones(ID_Ubicacion);

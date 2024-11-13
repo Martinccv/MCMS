@@ -56,13 +56,8 @@ BEGIN
             CONCAT('Stock bajo para material ID ', NEW.ID_Material, ' en ubicación ID ', NEW.ID_Ubicacion), 
             NOW()
         );
-
-        -- Generar mensaje de advertencia
-        SET v_Mensaje = CONCAT('Advertencia: El stock total de material ID ', NEW.ID_Material, 
-                               ' en ubicación ID ', NEW.ID_Ubicacion, 
-                               ' está por debajo del mínimo permitido.');
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_Mensaje;
     END IF;
+
 END //
 DELIMITER ;
 
@@ -78,4 +73,64 @@ BEGIN
         VALUES (NEW.ID_Activo, NOW(), 'Mantenimiento completado', 0, 'Técnico responsable');
     END IF;
 END//
+DELIMITER ;
+
+-- actualizar detalle de pedido a completado
+DROP TRIGGER IF EXISTS trigger_actualizar_detalle_pedido;
+DELIMITER //
+
+CREATE TRIGGER trigger_actualizar_detalle_pedido
+AFTER INSERT ON Recepciones
+FOR EACH ROW
+BEGIN
+    -- Actualizar el estado de los detalles de pedido a 'Completado' según ID_Pedido y ID_Ubicacion
+    UPDATE Detalle_Pedido
+    SET Estado = 'Completado'
+    WHERE ID_Pedido = NEW.ID_Pedido AND ID_Ubicacion = NEW.ID_Ubicacion;
+END //
+
+DELIMITER ;
+
+-- actualizar el estado de pedido cuando todos los detalles de pedido esten completos
+DROP TRIGGER IF EXISTS trigger_actualizar_estado_pedido;
+DELIMITER //
+
+CREATE TRIGGER trigger_actualizar_estado_pedido
+AFTER UPDATE ON Detalle_Pedido
+FOR EACH ROW
+BEGIN
+    DECLARE detalles_incompletos INT;
+
+    -- Contar si hay algún detalle de pedido que no esté completado para el mismo pedido
+    SELECT COUNT(*)
+    INTO detalles_incompletos
+    FROM Detalle_Pedido
+    WHERE ID_Pedido = NEW.ID_Pedido AND Estado <> 'Completado';
+
+    -- Si no hay detalles pendientes, actualizar el estado del pedido a 'Completado'
+    IF detalles_incompletos = 0 THEN
+        UPDATE Pedidos
+        SET Estado = 'Completado'
+        WHERE ID_Pedido = NEW.ID_Pedido;
+    END IF;
+END //
+
+DELIMITER ;
+
+-- ingresar stock desde un pedido recibido
+DROP TRIGGER IF EXISTS trigger_registrar_ingreso_inventario;
+DELIMITER //
+
+CREATE TRIGGER trigger_registrar_ingreso_inventario
+AFTER UPDATE ON Detalle_Pedido
+FOR EACH ROW
+BEGIN
+    -- Verificar si el estado del detalle de pedido cambió a 'Completado'
+    IF NEW.Estado = 'Completado' AND OLD.Estado <> 'Completado' THEN
+        -- Insertar una nueva entrada en el inventario para el material recibido
+        INSERT INTO Inventario (ID_Material, Cantidad_Disponible, ID_Ubicacion, Fecha_Ingreso)
+        VALUES (NEW.ID_Material, NEW.Cantidad, NEW.ID_Ubicacion, NOW());
+    END IF;
+END //
+
 DELIMITER ;

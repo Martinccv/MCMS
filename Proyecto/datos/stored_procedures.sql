@@ -50,6 +50,66 @@ BEGIN
 END//
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS sp_generar_pedidos;
+DELIMITER //
+
+CREATE PROCEDURE sp_generar_pedidos(
+    IN proveedor_id INT,
+    IN p_detalle_pedido JSON
+)
+BEGIN
+    DECLARE v_pedido_id INT;
+    DECLARE v_material_id INT;
+    DECLARE v_cantidad INT;
+    DECLARE v_ubicacion INT;
+    DECLARE v_costo DECIMAL(10, 2) DEFAULT 0;
+    DECLARE v_Index INT DEFAULT 0;
+    DECLARE v_Limit INT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Si ocurre un error, deshacer la transacción
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error al generar el pedido.';
+    END;
+
+    START TRANSACTION;
+
+    -- Obtener el número de elementos en el JSON
+    SET v_Limit = JSON_LENGTH(p_detalle_pedido);
+
+    -- Crear el pedido con estado 'Pendiente'
+    INSERT INTO Pedidos (ID_Proveedor, Fecha_Pedido, Estado, Total)
+    VALUES (proveedor_id, CURDATE(), 'Pendiente', 0);
+
+    -- Obtener el ID del pedido recién creado
+    SET v_pedido_id = LAST_INSERT_ID();
+
+    -- Iterar sobre los detalles de pedido
+    WHILE v_Index < v_Limit DO
+        -- Extraer los datos de cada elemento del JSON
+        SET v_material_id = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_detalle_pedido, CONCAT('$[', v_Index, '][0]'))) AS UNSIGNED);
+        SET v_cantidad = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_detalle_pedido, CONCAT('$[', v_Index, '][1]'))) AS UNSIGNED);
+        SET v_costo = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_detalle_pedido, CONCAT('$[', v_Index, '][2]'))) AS DECIMAL(10,2));
+        SET v_ubicacion = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_detalle_pedido, CONCAT('$[', v_Index, '][3]'))) AS UNSIGNED);
+
+        -- Insertar en Detalle_Pedido
+        INSERT INTO Detalle_Pedido (ID_Pedido, ID_Material, Cantidad, Costo, ID_Ubicacion)
+        VALUES (v_pedido_id, v_material_id, v_cantidad, v_costo, v_ubicacion);
+
+        -- Incrementar el índice para la próxima iteración
+        SET v_Index = v_Index + 1;
+    END WHILE;
+
+    -- Actualizar el total del pedido con la suma de los costos de los detalles
+    UPDATE Pedidos 
+    SET Total = (SELECT SUM(Cantidad * Costo) FROM Detalle_Pedido WHERE ID_Pedido = v_pedido_id)
+    WHERE ID_Pedido = v_pedido_id;
+
+    COMMIT;
+END //
+DELIMITER ;
+
 -- Procedimiento para generar un pedido automático:
 DROP PROCEDURE IF EXISTS sp_generar_pedido;
 DELIMITER //
@@ -98,7 +158,8 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS registrar_recepcion_pedido;
 DELIMITER //
 CREATE PROCEDURE registrar_recepcion_pedido (
-    IN p_pedido_id INT
+    IN p_pedido_id INT,
+    IN p_ubicacion_id INT
 )
 BEGIN
     -- Marcar el pedido como recibido
@@ -107,8 +168,8 @@ BEGIN
     WHERE ID_Pedido = p_pedido_id;
 
     -- Crear una recepción para el pedido
-    INSERT INTO Recepciones (ID_Pedido, Fecha_Recepcion, Estado)
-    VALUES (p_pedido_id, NOW(), 'Completada');
+    INSERT INTO Recepciones (ID_Pedido, Fecha_Recepcion, Estado,ID_Ubicacion)
+    VALUES (p_pedido_id, NOW(), 'Completada',p_ubicacion_id);
 END //
 DELIMITER ;
 
