@@ -157,21 +157,43 @@ DELIMITER ;
 -- Procedimiento para registrar una recepción de pedido
 DROP PROCEDURE IF EXISTS registrar_recepcion_pedido;
 DELIMITER //
-CREATE PROCEDURE registrar_recepcion_pedido (
+
+CREATE PROCEDURE registrar_recepcion_pedido(
     IN p_pedido_id INT,
     IN p_ubicacion_id INT
 )
 BEGIN
-    -- Marcar el pedido como recibido
-    UPDATE Pedidos
-    SET Estado = 'Recibido'
-    WHERE ID_Pedido = p_pedido_id;
+    DECLARE v_count INT DEFAULT 0;
+    DECLARE v_index INT DEFAULT 0;
 
-    -- Crear una recepción para el pedido
-    INSERT INTO Recepciones (ID_Pedido, Fecha_Recepcion, Estado,ID_Ubicacion)
-    VALUES (p_pedido_id, NOW(), 'Completada',p_ubicacion_id);
+    -- Contar las filas que cumplen con la condición
+    SELECT COUNT(*)
+    INTO v_count
+    FROM Detalle_Pedido
+    WHERE ID_Pedido = p_pedido_id 
+      AND ID_Ubicacion = p_ubicacion_id 
+      AND Estado = 'Pendiente';
+
+    -- Iterar y actualizar cada fila que cumpla con la condición
+    WHILE v_index < v_count DO
+        UPDATE Detalle_Pedido
+        SET Estado = 'Recibido'
+        WHERE ID_Pedido = p_pedido_id 
+          AND ID_Ubicacion = p_ubicacion_id 
+          AND Estado = 'Pendiente'
+        LIMIT 1;
+
+        -- Incrementar el índice para la próxima iteración
+        SET v_index = v_index + 1;
+    END WHILE;
+
+    -- Registrar una recepción única para el pedido y ubicación
+    INSERT INTO Recepciones (ID_Pedido, Fecha_Recepcion, Estado, ID_Ubicacion)
+    VALUES (p_pedido_id, NOW(), 'Completada', p_ubicacion_id);
+
 END //
 DELIMITER ;
+
 
 -- generar una nueva orden de mantenimiento
 DROP PROCEDURE IF EXISTS generar_orden_mantenimiento;
