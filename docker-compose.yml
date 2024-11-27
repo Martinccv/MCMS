@@ -12,3 +12,20 @@ services:
       - ./backup:/backup
     ports:
       - "3306:3306"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flask-backend
+    restart: always
+    environment:
+      - FLASK_ENV=${FLASK_ENV}
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DB=${MYSQL_DATABASE}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql

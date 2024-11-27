@@ -1,0 +1,9 @@
+pip==24.3.1
+Flask==2.1.0
+Flask-Migrate==3.1.0
+Flask-JWT-Extended==4.4.0
+Werkzeug==2.1.0
+python-dotenv
+flask-cors
+flask-mysqldb
+mysqlclient==2.1.0

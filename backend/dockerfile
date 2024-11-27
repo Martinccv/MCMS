@@ -1,5 +1,25 @@
-FROM python:3.9
-WORKDIR /app
+# Imagen base de Python
+FROM python:3.9-slim
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libmariadb-dev \
+    libmariadb-dev-compat \
+    pkg-config \
+    && apt-get clean
+
+# Crear el directorio de trabajo
+WORKDIR /backend
+
+# Copiar los archivos necesarios
 COPY . .
-RUN pip install -r requirements.txt
-CMD ["python", "app.py"]
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Exponer el puerto 5000 para Flask
+EXPOSE 5000
+
+# Comando para ejecutar la app
+CMD ["python", "main.py"]

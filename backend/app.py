@@ -1,19 +1,29 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_mysqldb import MySQL
-import os
+from config import Config
 
-app = Flask(__name__)
-app.config['MYSQL_HOST'] = os.getenv('DB_HOST')
-app.config['MYSQL_USER'] = os.getenv('DB_USER')
-app.config['MYSQL_PASSWORD'] = os.getenv('DB_PASSWORD')
-app.config['MYSQL_DB'] = os.getenv('DB_NAME')
+# Inicializa MySQL
+mysql = MySQL()
 
-mysql = MySQL(app)
+def create_app():
+    """Fábrica de aplicaciones para crear instancias de Flask."""
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
-@app.route('/api/pedidos', methods=['POST'])
-def create_pedido():
-    # Lógica para crear un pedido usando un procedimiento almacenado
-    pass
+    # Inicializa MySQL
+    mysql.init_app(app)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    # Ruta de prueba para verificar el backend
+    @app.route('/ping', methods=['GET'])
+    def ping():
+        return jsonify({"message": "¡Backend en Flask funcionando correctamente!"})
+
+    # Registrar Blueprints
+    from routes.example_routes import example_blueprint
+    app.register_blueprint(example_blueprint, url_prefix='/api')
+    
+    # Registra el blueprint de db_check
+    from routes.db_check import db_check_blueprint
+    app.register_blueprint(db_check_blueprint, url_prefix='/api')  # Usa el prefijo /api
+    
+    return app
